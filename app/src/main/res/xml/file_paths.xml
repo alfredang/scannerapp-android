@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <files-path name="scans" path="Scans/" />
+    <cache-path name="exports" path="exports/" />
+    <cache-path name="shared" path="shared/" />
+    <external-cache-path name="ext_shared" path="shared/" />
+</paths>

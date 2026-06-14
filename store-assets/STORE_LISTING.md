@@ -56,7 +56,7 @@ Powered by Tertiary Infotech Academy Pte Ltd.
 **Privacy Policy URL:** (REQUIRED — see PRIVACY_POLICY.md; must be hosted at a public URL)
 
 ## Graphic assets (in this folder)
-- App icon: `icon_512.png` (512×512)
+- App icon: `play_store_512.png` (512×512)
 - Feature graphic: `feature_graphic_1024x500.png` (1024×500)
 - Phone screenshots: `screenshot_1_home.png`, `screenshot_2_settings.png`
   (will add scan / filter / library / detail screenshots from the on-device test)

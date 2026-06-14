@@ -1,18 +1,37 @@
+<div align="center">
+
 # Tertiary Scanner — Android
 
-A native **Android document scanner**. Scan with edge detection and perspective correction,
-enhance with on-device filters, recognize text (OCR), and export to PDF/JPG — **fully offline.
-Nothing leaves your device.**
+[![Platform](https://img.shields.io/badge/Platform-Android%2024%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com)
+[![Language](https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![UI](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![OCR](https://img.shields.io/badge/ML%20Kit-On--device-FF6F00?logo=google&logoColor=white)](https://developers.google.com/ml-kit)
+[![Offline](https://img.shields.io/badge/100%25-Offline-success)](#)
 
-This is the Android port of the iOS *Tertiary Scanner*, rebuilt natively in Kotlin + Jetpack
-Compose with the same features and design.
+**Scan, enhance, OCR, and export documents to PDF/JPG — fully offline. Nothing leaves your device.**
 
-![Platform](https://img.shields.io/badge/Platform-Android%2024%2B-3DDC84?logo=android&logoColor=white)
-![Language](https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white)
-![UI](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)
-![Offline](https://img.shields.io/badge/100%25-Offline-success)
+[Report Bug](https://github.com/alfredang/scannerapp-android/issues) · [Request Feature](https://github.com/alfredang/scannerapp-android/issues)
 
-## Features
+</div>
+
+## Screenshots
+
+| Scan in seconds | Features | Made for documents | Light & dark |
+|:---:|:---:|:---:|:---:|
+| ![Scan](store-assets/screenshots/1_scan.png) | ![Features](store-assets/screenshots/2_features.png) | ![Settings](store-assets/screenshots/3_settings.png) | ![Dark mode](store-assets/screenshots/4_dark.png) |
+
+## About
+
+Tertiary Scanner is a **native Android document scanner** built in Kotlin and Jetpack Compose.
+Capture a document with automatic edge detection and perspective correction, enhance it with
+on-device image filters, recognize its text with OCR, and export a multi-page PDF or JPGs — all
+**without a network connection**. There is no backend, no analytics, and no account: every step
+runs on-device.
+
+This is the Android port of the iOS *Tertiary Scanner*, rebuilt natively with the same features
+and design.
+
+### Features
 
 - 📷 **Scan** — ML Kit Document Scanner: automatic edge detection, perspective correction,
   multi-page capture, and gallery import.
@@ -40,7 +59,58 @@ Compose with the same features and design.
 | Navigation | Navigation Compose |
 | Build | Gradle 8.14.3, AGP 8.13.0, JDK 17, compileSdk 36, minSdk 24 |
 
-## Build
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  UI  (Jetpack Compose · Material 3 · Navigation Compose)       │
+│  Home · Capture · Preview · Filter · Export · Library · …      │
+└───────────────────────────────┬──────────────────────────────┘
+                                 │ state / events
+┌───────────────────────────────▼──────────────────────────────┐
+│  ViewModels (MVVM)                                             │
+│  ScannerViewModel · LibraryViewModel · SettingsViewModel       │
+└───────────────────────────────┬──────────────────────────────┘
+                                 │
+┌───────────────────────────────▼──────────────────────────────┐
+│  Services / Imaging  (Dispatchers.Default / IO)               │
+│  ImageProcessor · OcrService · PdfService · ExportService      │
+│  StorageService · BitmapIo                                     │
+└───────────────────────────────┬──────────────────────────────┘
+                                 │
+┌───────────────────────────────▼──────────────────────────────┐
+│  Data layer                                                    │
+│  Room (metadata)  ·  JPEG files under filesDir/Scans/<id>/     │
+│  DataStore (settings)                                          │
+└──────────────────────────────────────────────────────────────┘
+        ▲ ML Kit Document Scanner / Text Recognition (on-device)
+```
+
+## Project structure
+
+```
+app/src/main/java/com/tertiaryinfotech/scannerapp/
+  model/      FilterType (8 enhancement filters)
+  data/       Room entities, DAO, AppDatabase
+  settings/   SettingsStore (DataStore Preferences)
+  imaging/    ImageProcessor (ColorMatrix / LUT / convolution)
+  service/    BitmapIo, OcrService, PdfService, ExportService, StorageService, Working*
+  vm/         ScannerViewModel, LibraryViewModel, SettingsViewModel
+  ui/         AppNav, Capture, screens, components, theme
+  ScannerApplication.kt   AppContainer (manual DI)
+store-assets/  Play Store listing assets, screenshots, icons
+docs/          Hosted privacy policy (GitHub Pages)
+```
+
+## Getting started
+
+### Prerequisites
+
+- **Android Studio** (Ladybug or newer) with the Android SDK
+- **JDK 17**
+- An Android device or emulator running **API 24+**
+
+### Build & run
 
 ```bash
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
@@ -48,10 +118,12 @@ export ANDROID_HOME="$HOME/Library/Android/sdk"
 
 ./gradlew :app:assembleDebug     # debug APK  -> app/build/outputs/apk/debug/
 ./gradlew installDebug           # install on a connected device/emulator
-./gradlew :app:bundleRelease     # signed AAB -> app/build/outputs/bundle/release/  (needs keystore.properties)
+./gradlew :app:bundleRelease     # signed AAB -> app/build/outputs/bundle/release/ (needs keystore.properties)
 ```
 
-Open the folder in **Android Studio** and Run ▶ for the usual workflow.
+Or open the folder in **Android Studio** and press **Run ▶**.
+
+> On emulators without Google Play services, capture falls back to the system Photo Picker.
 
 ## Release signing
 
@@ -66,19 +138,29 @@ RELEASE_KEY_PASSWORD=…
 
 Keep the keystore **outside** the repo and **backed up** — it is required to publish updates.
 
-## Project layout
+## Privacy
 
-```
-app/src/main/java/com/tertiaryinfotech/scannerapp/
-  model/      FilterType
-  data/       Room entities, DAO, AppDatabase
-  settings/   SettingsStore (DataStore)
-  imaging/    ImageProcessor
-  service/    BitmapIo, OcrService, PdfService, ExportService, StorageService, Working*
-  vm/         ScannerViewModel, LibraryViewModel, SettingsViewModel
-  ui/         AppNav, Capture, screens, components, theme
-```
+Tertiary Scanner collects and shares **no data**. There is no network access; scanning,
+enhancement, OCR, PDF generation, and storage all happen **on-device**. See the full
+[privacy policy](store-assets/PRIVACY_POLICY.md).
+
+## Contributing
+
+Contributions are welcome:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add your feature'`)
+4. Push the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+## Acknowledgements
+
+- [ML Kit](https://developers.google.com/ml-kit) — on-device document scanning & text recognition
+- [Jetpack Compose](https://developer.android.com/jetpack/compose) & [Material 3](https://m3.material.io)
 
 ---
 
-Powered by **Tertiary Infotech Academy Pte Ltd**.
+Developed by **Tertiary Infotech Academy Pte Ltd**.
+
+⭐ If you find this project useful, please consider giving it a star.

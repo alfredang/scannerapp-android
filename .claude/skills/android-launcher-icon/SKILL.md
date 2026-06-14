@@ -8,7 +8,14 @@ description: Generate and fix the adaptive Android launcher icon for Tertiary Sc
 Generate and repair the adaptive launcher icon for **Tertiary Scanner**. Covers the
 adaptive-icon foreground-sizing gotcha that makes the icon render differently across
 launchers (the bug that makes it look like a plain white tile on Samsung One UI), plus the
-end-to-end regenerate → preview → install → verify workflow.
+end-to-end regenerate → preview → install → verify → ship-verified workflow.
+
+> ⚠️ **The icon you ship is the one baked into the artifact, not the one in `app/src`.**
+> Regenerating the source PNGs does **not** fix a release until you **rebuild** the AAB/APK.
+> A pre-existing `app-release.aab` whose mtime predates the icon change carries the **old**
+> icon — uploading it ships the bug even though the repo looks correct. This is exactly how
+> the v1 white-tile shipped to Play (AAB built 6h before the foreground was resized). Always
+> rebuild after touching icons, then **verify the icon inside the built artifact** (Step 5).
 
 ## When to Use This Skill
 
@@ -110,13 +117,39 @@ adb -s <DEVICE_ID> exec-out screencap -p > /tmp/drawer.png
 ### 4. Ship to Play
 
 ```bash
+# ALWAYS rebuild after any icon change — never upload a pre-existing AAB.
+# If you changed the icon, an older app-release.aab is STALE and ships the old icon.
 ./gradlew :app:bundleRelease   # signed AAB -> app/build/outputs/bundle/release/
 ```
 
 - Bump `versionCode` in [app/build.gradle.kts](app/build.gradle.kts) first — Play rejects a
-  duplicate `versionCode`.
+  duplicate `versionCode` (and an icon-only fix still needs a new `versionCode` to ship).
 - The Play **store listing** icon (512×512) is a separate upload in the Console; refresh
   it from [store-assets/play_store_512.png](store-assets/play_store_512.png).
+
+### 5. Verify the icon INSIDE the built artifact (do not skip)
+
+The source assets passing Step 2 is **not** proof the upload is correct — only the artifact
+is. Extract the foreground from the AAB you are about to upload and look at it. The build
+re-encodes/optimizes PNGs, so an **md5 vs source will not match even when correct** — verify
+**visually**, not by hash. Confirm a compact document panel with clear margins (the fixed
+≈0.50 look), not an edge-to-edge sheet (the broken ≈0.72 look that becomes a white tile).
+
+```bash
+AAB=app/build/outputs/bundle/release/app-release.aab
+rm -rf /tmp/aab_check && mkdir -p /tmp/aab_check && cd /tmp/aab_check
+unzip -o -q "$OLDPWD/$AAB" "base/res/mipmap-xxxhdpi*/ic_launcher_foreground.png"
+# open base/res/mipmap-xxxhdpi-v4/ic_launcher_foreground.png and eyeball it
+```
+
+Sanity-check the artifact is fresh, too — its mtime must be **newer** than the icon files:
+
+```bash
+ls -la "$AAB" app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png   # AAB must be newer
+```
+
+Only upload once the extracted foreground matches the fixed art **and** the AAB is newer than
+the source icons.
 
 ## Icon design reference (current art)
 

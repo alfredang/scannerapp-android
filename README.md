@@ -10,9 +10,15 @@
 
 **Scan, enhance, OCR, and export documents to PDF/JPG — fully offline. Nothing leaves your device.**
 
-[Report Bug](https://github.com/alfredang/scannerapp-android/issues) · [Request Feature](https://github.com/alfredang/scannerapp-android/issues)
+[Download from Google Play](https://play.google.com/store/apps/details?id=sg.com.tertiarycourses.scanner) · [Report Bug](https://github.com/alfredang/scannerapp-android/issues) · [Request Feature](https://github.com/alfredang/scannerapp-android/issues)
 
 </div>
+
+## Download
+
+Tertiary Scanner is available on Google Play:
+
+[**Download Tertiary Scanner from the Google Play Store**](https://play.google.com/store/apps/details?id=sg.com.tertiarycourses.scanner)
 
 ## Screenshots
 

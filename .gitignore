@@ -9,6 +9,7 @@
 /app/build/
 /.idea/
 /.kotlin/
+.playwright-mcp/
 # Signing — never commit
 *.jks
 *.keystore
